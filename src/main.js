@@ -7,12 +7,14 @@ import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 
+import VueCookies from 'vue3-cookies'
+
 import '@/assets/styles.scss';
 import { createPinia } from 'pinia';
 const app = createApp(App);
 
 const pinia = createPinia()
-
+app.use(VueCookies);
 app.use(router);
 app.use(PrimeVue, {
     theme: {

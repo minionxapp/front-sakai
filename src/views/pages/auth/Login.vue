@@ -19,9 +19,10 @@ const userInput = reactive({
 
 const isLogin = ref(true)
 const handleSubmit = () => {
-    console.log(userInput)
+    // console.log(userInput)
     if (isLogin.value == true) {
         LoginUser(userInput)
+        
     } else {
         RegisterUser(userInput)
         clearInput()

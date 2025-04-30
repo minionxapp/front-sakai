@@ -4,6 +4,8 @@ import { FilterMatchMode } from '@primevue/core/api';
 import DatePicker from 'primevue/datepicker';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
+import {useCookies} from 'vue3-cookies'
+import { defineStore } from "pinia";
 
 onMounted(() => {
     allData()
@@ -47,8 +49,18 @@ const getCategory = (text1) => {
 }
 
 const allData = async () => {
+    const token = localStorage.getItem('token')
+    const { cookies } = useCookies();
     try {
-        const { data } = await custumFetch.get("/myaset")
+        const { data } = await custumFetch.get("/myaset",{
+            withCredentials: false,
+            headers: {
+                'Access-Control-Allow-Origin' : '*',
+                'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+                'token' :token
+                },
+            // response.setHeader("Access-Control-Allow-Origin", "*")
+        })
         myasets.value = data.data
     } catch (error) {
         console.log(error)

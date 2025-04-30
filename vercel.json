@@ -1,9 +1,12 @@
 {
-    "rewrites": [
+    "rewrites":[
         {
-            "source": "/:path*",
-            "destination": "/index.html"
+            "source" : "api/:path(.*)",
+            "destination" : "https://backend02-eight.vercel.app/api/:path"
+        },
+        {
+            "source" : "/(.*)",
+            "destination" : "/index.html"
         }
-    ],
-    "trailingSlash": false
+    ]
 }

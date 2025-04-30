@@ -3,22 +3,35 @@ import { PrimeVueResolver } from '@primevue/auto-import-resolver';
 import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
 import { defineConfig, loadEnv } from 'vite';
+import vueDevTools from 'vite-plugin-vue-devtools'
+import dotenv from 'dotenv'
 
 // https://vitejs.dev/config/
 export default ({mode})=>{
-    process.env = {...process.env, ...loadEnv(mode, process.cwd())}
-
+  process.env = {...process.env, ...loadEnv(mode, process.cwd())}
+  
+  console.log("============1111111==========="+process.env.VITE_API_URL)
 return defineConfig({
     optimizeDeps: {
         noDiscovery: true
     },
     plugins: [
         vue(),
+        vueDevTools(),
         Components({
             resolvers: [PrimeVueResolver()]
         })
     ],
     server: {
+        proxy: {
+          '/api': {
+            target: process.env.VITE_API_URL,
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api/, ''),
+          },
+        }
+      },
+      dev: {
         proxy: {
           '/api': {
             target: process.env.VITE_API_URL,
