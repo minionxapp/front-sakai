@@ -51,17 +51,19 @@ const getCategory = (text1) => {
 const allData = async () => {
     const token = localStorage.getItem('token')
     const { cookies } = useCookies();
+    console.log(custumFetch)
     try {
         const { data } = await custumFetch.get("/myaset",{
             withCredentials: false,
-            headers: {
-                'Access-Control-Allow-Origin' : '*',
-                'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-                'token' :token
-                },
+            //header sudah dei set di custumFetch
+            // headers: {
+            //     'Access-Control-Allow-Origin' : '*',
+            //     'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+            //     'token' :token
+            //     },
+            })
+            myasets.value = data.data
             // response.setHeader("Access-Control-Allow-Origin", "*")
-        })
-        myasets.value = data.data
     } catch (error) {
         console.log(error)
     }
