@@ -11,10 +11,11 @@ import custumFetch from '@/api';
 const toast = useToast();
 const selectedMyasets = ref();
 const dialog = ref(false)
-const deleteDialog=ref(false)
+const deleteDialog = ref(false)
 const action = ref('')
 const categories = ref();
 const category = ref({});
+const token = ref('')
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -31,12 +32,18 @@ const closeDialog = (str) => {
     dialog.value = false
 }
 onMounted(() => {
+    token.value = localStorage.getItem('token')
     allData()
 })
 
 const allData = async () => {
     try {
-        const { data } = await custumFetch.get("/category")
+        const { data } = await custumFetch.get("/category", {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        })
         categories.value = data.data
     } catch (error) {
         console.log(error)
@@ -56,12 +63,16 @@ async function confirmDelete(data) {
 // delete berlum di coba, wifi nya mati
 const deleteData = async () => {
     try {
-        console.log(category.value)
-        const categoryDelete = await custumFetch.delete('/category/' + category.value._id)
+        const categoryDelete = await custumFetch.delete('/category/' + category.value._id, {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        })
         deleteDialog.value = false;
         category.value = {};
         toast.add({ severity: 'success', summary: 'Successful', detail: 'category Deleted sukses', life: 3000 });
-    allData()
+        allData()
     } catch (error) {
         toast.add({ severity: 'danger', summary: 'Successful', detail: 'category Deleted Gagal', life: 3000 });
     }
@@ -72,7 +83,13 @@ const handleSubmit = async (data) => {
             const category = await custumFetch.post('/category', {
                 label: data.label,
                 value: data.value,
-            })
+            }
+                , {
+                    withCredentials: false,
+                    headers: {
+                        'token': token.value
+                    },
+                })
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Category Created', life: 8000 });
             closeDialog()
         } catch (error) {
@@ -83,6 +100,11 @@ const handleSubmit = async (data) => {
             const category = await custumFetch.put('/category/' + data._id, {
                 label: data.label,
                 value: data.value,
+            }, {
+                withCredentials: false,
+                headers: {
+                    'token': token.value
+                },
             })
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Update Berhasil', life: 8000 });
             closeDialog()
@@ -135,15 +157,15 @@ const handleSubmit = async (data) => {
             </DataTable>
 
             <Dialog v-model:visible="deleteDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="category">Are you sure you want to delete <b>{{ category.name }}</b>?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteData" />
-            </template>
-        </Dialog>
+                <div class="flex items-center gap-4">
+                    <i class="pi pi-exclamation-triangle !text-3xl" />
+                    <span v-if="category">Are you sure you want to delete <b>{{ category.name }}</b>?</span>
+                </div>
+                <template #footer>
+                    <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" />
+                    <Button label="Yes" icon="pi pi-check" @click="deleteData" />
+                </template>
+            </Dialog>
 
         </div>
     </div>

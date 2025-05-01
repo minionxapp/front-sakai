@@ -4,10 +4,11 @@ import { FilterMatchMode } from '@primevue/core/api';
 import DatePicker from 'primevue/datepicker';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
-import {useCookies} from 'vue3-cookies'
+import { useCookies } from 'vue3-cookies'
 import { defineStore } from "pinia";
 
 onMounted(() => {
+    token.value = localStorage.getItem('token')
     allData()
     // MyasetService.getMyasets().then((data) => (myasets.value = data));
 });
@@ -20,6 +21,7 @@ const deleteMyasetDialog = ref(false);
 const deleteMyasetsDialog = ref(false);
 const myaset = ref({});
 const selectedMyasets = ref();
+const token = ref('')
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -49,25 +51,23 @@ const getCategory = (text1) => {
 }
 
 const allData = async () => {
-    const token = localStorage.getItem('token')
+    // const token = localStorage.getItem('token')
     const { cookies } = useCookies();
-    console.log(custumFetch)
     try {
-        const { data } = await custumFetch.get("/myaset",{
+        const { data } = await custumFetch.get("/myaset", {
             withCredentials: false,
-            //header sudah dei set di custumFetch
-            // headers: {
-            //     'Access-Control-Allow-Origin' : '*',
-            //     'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-            //     'token' :token
-            //     },
-            })
-            myasets.value = data.data
-            // response.setHeader("Access-Control-Allow-Origin", "*")
+            headers: {
+                'token': token.value
+            },
+        })
+        myasets.value = data.data
     } catch (error) {
         console.log(error)
     }
 }
+//header sudah dei set di custumFetch
+//     'Access-Control-Allow-Origin' : '*',
+//     'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
 
 
 function formatCurrency(value) {
@@ -94,9 +94,12 @@ async function saveMyaset() {
                 description: myaset.value.description,
                 category: (myaset.value.category),
                 tgl: myaset.value.tgl
+            }, {
+                withCredentials: false,
+                headers: {
+                    'token': token.value
+                },
             })
-            // myaset.value.inventoryStatus = myaset.value.inventoryStatus.value ? myaset.value.inventoryStatus.value : myaset.value.inventoryStatus;
-            // myasets.value[findIndexById(myaset.value.id)] = myaset.value;
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
             const myasetEdit = await custumFetch.post('/myaset', {
@@ -104,6 +107,11 @@ async function saveMyaset() {
                 description: myaset.value.description,
                 category: (myaset.value.category),
                 tgl: myaset.value.tgl
+            }, {
+                withCredentials: false,
+                headers: {
+                    'token': token.value
+                },
             })
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Created', life: 3000 });
         }
@@ -127,7 +135,14 @@ async function confirmDeleteMyaset(prod) {
 
 async function deleteMyaset() {
     myasets.value = myasets.value.filter((val) => val.id !== myaset.value.id);
-    const myasetDelete = await custumFetch.delete('/myaset/' + myaset.value._id)
+    const myasetDelete = await custumFetch.delete('/myaset/' + myaset.value._id,
+        {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        }
+    )
     deleteMyasetDialog.value = false;
     myaset.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Deleted', life: 3000 });

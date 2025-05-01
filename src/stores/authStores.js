@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('user', () => {
 
 
     const LoginUser = async (inputData) => {
-        console.log(inputData)
+        // console.log(inputData)
         try {
             const data  = await custumFetch.post('auth/login', {
                 email: inputData.email,
