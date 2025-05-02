@@ -9,22 +9,24 @@ import { onMounted } from 'vue';
 import custumFetch from '@/api';
 
 const toast = useToast();
-const selectedMyasets = ref();
+const token = ref('')
 const dialog = ref(false)
+const selectedMyasets = ref();
 const deleteDialog = ref(false)
 const action = ref('')
 const categories = ref();
 const category = ref({});
-const token = ref('')
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
 const openForm = () => {
     dialog.value = true
     action.value = 'new'
     clearForm()
 }
+
 const clearForm = () => {
     category.value = {}
 }
@@ -60,7 +62,7 @@ async function confirmDelete(data) {
     category.value = data;
     deleteDialog.value = true;
 }
-// delete berlum di coba, wifi nya mati
+
 const deleteData = async () => {
     try {
         const categoryDelete = await custumFetch.delete('/category/' + category.value._id, {

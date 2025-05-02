@@ -9,6 +9,7 @@ import { defineStore } from "pinia";
 
 onMounted(() => {
     token.value = localStorage.getItem('token')
+    getCategories()
     allData()
     // MyasetService.getMyasets().then((data) => (myasets.value = data));
 });
@@ -22,6 +23,7 @@ const deleteMyasetsDialog = ref(false);
 const myaset = ref({});
 const selectedMyasets = ref();
 const token = ref('')
+const categories = ref([]);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -34,12 +36,19 @@ const statuses = ref([
 ]);
 
 // next pake data dari tabel
-const categories = ref([
-    { label: 'MOTOR', value: 'motor' },
-    { label: 'RUMAH', value: 'rumah' },
-    { label: 'TANAH', value: 'tanah' },
-    { label: 'MOBIL', value: 'mobil' },
-]);
+const getCategories = async()=>{
+    try {
+        const { data } = await custumFetch.get("/category", {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        })
+        categories.value = data.data
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 const getCategory = (text1) => {
     for (let i = 0; i < (categories.value).length; i++) {
@@ -51,7 +60,7 @@ const getCategory = (text1) => {
 }
 
 const allData = async () => {
-    // const token = localStorage.getItem('token')
+   
     const { cookies } = useCookies();
     try {
         const { data } = await custumFetch.get("/myaset", {
