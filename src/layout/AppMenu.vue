@@ -8,6 +8,15 @@ const model = ref([
         label: 'Home',
         items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
     },
+    
+    {
+        label: 'DEV',
+        items: [
+            { label: 'Tabel', icon: 'pi pi-fw pi-tabel', to: '/tabel' },
+            { label: 'Tabel Kolom', icon: 'pi pi-fw pi-tabel', to: '/tabelkolom' },
+        ],
+        visible: true
+    },
     {
         label: 'Admin',
         items: [

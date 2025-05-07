@@ -1,6 +1,7 @@
 import AppLayout from '@/layout/AppLayout.vue';
 import { useAuthStore } from '@/stores/authStores';
 import { createRouter, createWebHistory } from 'vue-router';
+// import DevView from './views/DevView.vue';
 
 
 const router = createRouter({
@@ -54,6 +55,22 @@ const router = createRouter({
                     path: '/category',
                     name: 'category',
                     component: () => import('@/views/admin/CategoryView.vue'),
+                    meta :{
+                        requiredAuth:true
+                      }
+                },
+                {
+                    path: '/tabel',
+                    name: 'tabel',
+                    component: () => import('@/views/admin/Crud/TableView.vue'),
+                    meta :{
+                        requiredAuth:true
+                      }
+                },
+                {
+                    path: '/tabelkolom',
+                    name: 'tabelKolom',
+                    component: () => import('@/views/admin/Crud/TabelKolomView.vue'),
                     meta :{
                         requiredAuth:true
                       }
