@@ -42,17 +42,17 @@ onMounted(() => {
 });
 
 const allData = async () => {
-   try {
-       const { data } = await custumFetch.get("/dev/alltables", {
-           withCredentials: false,
-           headers: {
-               'token': token.value
-           },
-       })
-       datas.value = data.data
-   } catch (error) {
-       console.log(error)
-   }
+    try {
+        const { data } = await custumFetch.get("/dev/alltables", {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        })
+        datas.value = data.data
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 
@@ -111,18 +111,39 @@ async function confirmDeleteData(prod) {
 
 async function deleteData() {
     datas.value = datas.value.filter((val) => val.id !== data.value.id);
-    const dataDelete = await custumFetch.delete('/dev/tabel/' + data.value._id,
-        {
+    //cek tabel masih memiliki kolom
+    console.log(data.value)
+    const param = await data.value.name
+    try {
+        const koloms = await custumFetch.get("/dev/kolombytabel/" + param, {
             withCredentials: false,
             headers: {
                 'token': token.value
             },
+        })
+        //yang sudah tidak punya kolom bis di deleete
+        if ((koloms.data.data).length == 0) {
+            console.log("kosong")
+            const dataDelete = await custumFetch.delete('/dev/tabel/' + data.value._id,
+                {
+                    withCredentials: false,
+                    headers: {
+                        'token': token.value
+                    },
+                }
+            )
+            data.value = {};
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Data Deleted', life: 3000 });
+        } else {
+            toast.add({ severity: 'success', summary: 'Gagal', detail: 'Data Deleted Failed, Masih ada Kolom', life: 3000 });
         }
-    )
+    } catch (error) {
+        console.log(error)
+    }
+
     deleteDialog.value = false;
-    data.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Data Deleted', life: 3000 });
     allData()
+
 }
 
 function editData(prod) {
@@ -176,8 +197,8 @@ function editData(prod) {
                 </Column>
                 <!-- <Column field="tgl" header="Tanggal" sortable style="min-width: 16rem">
                     <template #body="{ data }"> -->
-                        <!-- {{ formatDate(data.tgl) }} -->
-                    <!-- </template>
+                <!-- {{ formatDate(data.tgl) }} -->
+                <!-- </template>
                 </Column> -->
                 <Column :exportable="false" style="min-width: 12rem" header="Action">
                     <template #body="slotProps">
@@ -201,16 +222,16 @@ function editData(prod) {
                 </div>
                 <div>
                     <label for="priv" class="block font-bold mb-3">Priv</label>
-                    <Select id="priv" v-model.trim="data.priv" :options="privs" optionLabel="label"
-                    optionValue="value" placeholder="Priviledge a Category" fluid></Select>
+                    <Select id="priv" v-model.trim="data.priv" :options="privs" optionLabel="label" optionValue="value"
+                        placeholder="Priviledge a Category" fluid></Select>
                 </div>
                 <div>
                     <label for="desc" class="block font-bold mb-3">Description</label>
                     <Textarea id="desc" v-model="data.desc" required="true" rows="3" cols="20" fluid />
                 </div>
             </div>
-            
-         
+
+
             <template #footer>
                 <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
                 <Button label="Save" icon="pi pi-check" @click="saveData" />

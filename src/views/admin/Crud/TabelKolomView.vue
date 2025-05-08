@@ -17,8 +17,18 @@ const submitted = ref(false);
 const data = ref({});//myaset
 const tabels = ref([]); //myasets
 const datas = ref();
+const tabelSelected = ref();
 
 const kolomsTabel = ref();
+const tipes = ref([
+    { label: 'String', value: 'String' },
+    { label: 'Number', value: 'Number' },
+    { label: 'Boolean', value: 'Boolean' }
+])
+const yesNo = ref([
+    { label: 'No', value: 'No' },
+    { label: 'Yes', value: 'Yes' },
+])
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -48,24 +58,56 @@ const getTabel = async () => {
     }
 }
 
-const openNew = () => {
+const openNew = async() => {
+    const tabel = await custumFetch.get('/dev/findtabel/' + data.value.name,
+        {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        }
+    )
     data.value = {};
-    alert(kolomsTabel.value[0].tabel)
-    data.value.kol_tabelId = kolomsTabel.value[0]._id ;
-    // submitted.value = false;
+    data.value.kol_tabelId = tabel.data.data[0]._id
+    data.value.tabel = tabel.data.data[0].name
+    data.value.name = tabel.data.data[0].name
+    tabelSelected.value = tabel.data.data[0].name
     formDialog.value = true;
 }
 function hideDialog() {
     formDialog.value = false;
     submitted.value = false;
 }
+async function confirmDeleteData(prod) {
+    console.log(prod._id)
+    data.value._id = prod._id;
+    console.log(data.value)
+    deleteDialog.value = true;
+}
+
+async function deleteSelected() {
+    // console.log(data.value)
+    const myasetDelete = await custumFetch.delete('/dev/kolombytabel/' + data.value._id,
+        {
+            withCredentials: false,
+            headers: {
+                'token': token.value
+            },
+        }
+    )
+    deleteDialog.value = false;
+    data.value = {};
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Kolom Tabel Deleted', life: 3000 });
+    data.value.name = await tabelSelected.value
+    getKoloms();
+}
+
+
+
 
 async function saveData() {
-    alert("simpan1")
     if (data?.value.kol_name?.trim()) {
-        alert("simpan2")
         if (data.value._id) {
-            alert("simpan3")
             console.log("edit......")
             const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
                 name: data.value.name,
@@ -79,10 +121,9 @@ async function saveData() {
             })
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
-            alert("simpan4")
             console.log("new.......")
             const dataNew = await custumFetch.post('/dev/tabelkolom', {
-                tabel :kolomsTabel.value[0].tabel,
+                tabel :data.value.tabel,
                 kol_name: data.value.kol_name,
                 kol_tipe: data.value.kol_tipe,
                 kol_unique: (data.value.kol_unique),
@@ -100,6 +141,8 @@ async function saveData() {
 
         formDialog.value = false;
         data.value = {};
+        data.value.name = tabelSelected.value
+        getKoloms();
         // allData()
     }
 }
@@ -177,10 +220,10 @@ const getKoloms = async () => {
             <div class="flex flex-col gap-6">
                 <div>
                     <label for="tableId" class="block font-bold mb-3">Tabel ID</label>
-                    <InputText id="kol_tabelId" v-model.trim="data.kol_tabelId" required="true" :invalid="submitted && !data.kol_tabelId" fluid />
+                    <InputText id="kol_tabelId" v-model.trim="data.kol_tabelId" required="true" :invalid="submitted && !data.kol_tabelId" fluid readonly=""/>
                 </div>
                 <div>
-                    <label for="kol_name" class="block font-bold mb-3">Name</label>
+                    <label for="kol_name" class="block font-bold mb-3">Name Kolom</label>
                     <InputText id="kol_name" v-model.trim="data.kol_name" required="true" :invalid="submitted && !data.kol_name"
                         fluid />
                     <small v-if="submitted && !data.kol_name" class="text-red-500">Name is required.</small>
@@ -188,49 +231,46 @@ const getKoloms = async () => {
 
                 <div>
                     <label for="kol_tipe" class="block font-bold mb-3">Tipe</label>
-                    <InputText id="kol_tipe" v-model.trim="data.kol_tipe" required="true" :invalid="submitted && !data.kol_tipe" fluid />
+                    <!-- <InputText id="kol_tipe" v-model.trim="data.kol_tipe" required="true" :invalid="submitted && !data.kol_tipe" fluid /> -->
+                    <Select id="kol_tipe" v-model.trim="data.kol_tipe" :options="tipes" optionLabel="label" optionValue="value"
+                    placeholder="Tipe" >
+                </Select>
                 </div>
 
                 <div>
                     <label for="kol_unique" class="block font-bold mb-3">Unique</label>
-                    <InputText id="kol_unique" v-model.trim="data.kol_unique" required="true" :invalid="submitted && !data.kol_unique" fluid />
+                    <!-- <InputText id="kol_unique" v-model.trim="data.kol_unique" required="true" :invalid="submitted && !data.kol_unique" fluid /> -->
+                    <Select id="kol_unique" v-model.trim="data.kol_unique" :options="yesNo" optionLabel="label" optionValue="value"
+                    placeholder="Unique" ></Select>
                 </div>
 
                 <div>
                     <label for="kol_required" class="block font-bold mb-3">Required</label>
-                    <InputText id="kol_required" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.kol_required" fluid />
+                    <!-- <InputText id="kol_required" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.kol_required" fluid /> -->
+                    <Select id="kol_required" v-model.trim="data.kol_required" :options="yesNo" optionLabel="label" optionValue="value"
+                    placeholder="Required" ></Select>
                 </div>
 
                 <div>
                     <label for="kol_default" class="block font-bold mb-3">Default</label>
                     <InputText id="kol_default" v-model.trim="data.kol_default" required="true" :invalid="submitted && !data.kol_default" fluid />
                 </div>
-
-                <!-- <div>
-                    <label for="kol_defaut" class="block font-bold mb-3">kol_defaut</label>
-                    <InputText id="kol_defaut" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.name" fluid />
-                </div>
-
-                <div>
-                    <label for="kol_defaut" class="block font-bold mb-3">kol_defaut</label>
-                    <InputText id="kol_defaut" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.name" fluid />
-                </div> -->
-                <!-- <div>
-                    <label for="priv" class="block font-bold mb-3">Priv</label>
-                    <Select id="priv" v-model.trim="data.priv" :options="privs" optionLabel="label"
-                    optionValue="value" placeholder="Priviledge a Category" fluid></Select>
-                </div>
-                <div>
-                    <label for="desc" class="block font-bold mb-3">Description</label>
-                    <Textarea id="desc" v-model="data.desc" required="true" rows="3" cols="20" fluid />
-                </div> -->
             </div>
             <template #footer>
                 <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
                 <Button label="Save" icon="pi pi-check" @click="saveData" />
             </template>
         </Dialog>
-
+        <Dialog v-model:visible="deleteDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+            <div class="flex items-center gap-4">
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <span v-if="data">Are you sure you want to delete the selected datas?</span>
+            </div>
+            <template #footer>
+                <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" />
+                <Button label="Yes" icon="pi pi-check" text @click="deleteSelected" />
+            </template>
+        </Dialog>
 
     </div>
 
