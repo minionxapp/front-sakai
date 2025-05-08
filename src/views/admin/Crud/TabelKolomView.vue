@@ -79,9 +79,8 @@ function hideDialog() {
     submitted.value = false;
 }
 async function confirmDeleteData(prod) {
-    console.log(prod._id)
+    // console.log(prod._id)
     data.value._id = prod._id;
-    console.log(data.value)
     deleteDialog.value = true;
 }
 
@@ -96,10 +95,12 @@ async function deleteSelected() {
         }
     )
     deleteDialog.value = false;
+    const dataValueName =data.value.name
     data.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Kolom Tabel Deleted', life: 3000 });
-    data.value.name = await tabelSelected.value
-    getKoloms();
+    data.value.name = dataValueName
+    // console.log("data.value.name  "+data.value.name )
+    await getKoloms();
 }
 
 
@@ -108,7 +109,7 @@ async function deleteSelected() {
 async function saveData() {
     if (data?.value.kol_name?.trim()) {
         if (data.value._id) {
-            console.log("edit......")
+            console.log("edit.....data.")
             const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
                 name: data.value.name,
                 desc: data.value.desc,
@@ -121,7 +122,7 @@ async function saveData() {
             })
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
-            console.log("new.......")
+            console.log("new.......data")
             const dataNew = await custumFetch.post('/dev/tabelkolom', {
                 tabel :data.value.tabel,
                 kol_name: data.value.kol_name,
