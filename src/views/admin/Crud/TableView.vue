@@ -73,18 +73,19 @@ function hideDialog() {
 async function saveData() {
     if (data?.value.name?.trim()) {
         if (data.value._id) {
-            console.log("edit......")
-            const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
-                name: data.value.name,
-                desc: data.value.desc,
-                priv: (data.value.priv),
-            }, {
-                withCredentials: false,
-                headers: {
-                    'token': token.value
-                },
-            })
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
+            //tidak ada proses edit
+            // console.log("edit......")
+            // const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
+            //     name: data.value.name,
+            //     desc: data.value.desc,
+            //     priv: (data.value.priv),
+            // }, {
+            //     withCredentials: false,
+            //     headers: {
+            //         'token': token.value
+            //     },
+            // })
+            // toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
             const dataNew = await custumFetch.post('/dev/tabel', {
                 name: data.value.name,
@@ -112,7 +113,6 @@ async function confirmDeleteData(prod) {
 async function deleteData() {
     datas.value = datas.value.filter((val) => val.id !== data.value.id);
     //cek tabel masih memiliki kolom
-    console.log(data.value)
     const param = await data.value.name
     try {
         const koloms = await custumFetch.get("/dev/kolombytabel/" + param, {
@@ -123,7 +123,6 @@ async function deleteData() {
         })
         //yang sudah tidak punya kolom bis di deleete
         if ((koloms.data.data).length == 0) {
-            console.log("kosong")
             const dataDelete = await custumFetch.delete('/dev/tabel/' + data.value._id,
                 {
                     withCredentials: false,

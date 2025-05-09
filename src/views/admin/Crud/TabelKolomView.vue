@@ -3,6 +3,9 @@ import custumFetch from '@/api';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
+
 
 
 const toast = useToast();
@@ -13,6 +16,7 @@ const deletesDialog = ref(false);
 const selectedDatas = ref();
 const token = ref('')
 const submitted = ref(false);
+const spinner = ref(false)
 
 const data = ref({});//myaset
 const tabels = ref([]); //myasets
@@ -59,33 +63,36 @@ const getTabel = async () => {
 }
 
 const openNew = async() => {
-    const tabel = await custumFetch.get('/dev/findtabel/' + data.value.name,
-        {
-            withCredentials: false,
-            headers: {
-                'token': token.value
-            },
-        }
-    )
-    data.value = {};
-    data.value.kol_tabelId = tabel.data.data[0]._id
-    data.value.tabel = tabel.data.data[0].name
-    data.value.name = tabel.data.data[0].name
-    tabelSelected.value = tabel.data.data[0].name
-    formDialog.value = true;
+    if (data.value.name =='' || data.value.name == null){
+        alert("Pilih tabel terlebih dahulu")
+    }else {
+
+        const tabel = await custumFetch.get('/dev/findtabel/' + data.value.name,
+            {
+                withCredentials: false,
+                headers: {
+                    'token': token.value
+                },
+            }
+        )
+        data.value = {};
+        data.value.kol_tabelId = tabel.data.data[0]._id
+        data.value.tabel = tabel.data.data[0].name
+        data.value.name = tabel.data.data[0].name
+        tabelSelected.value = tabel.data.data[0].name
+        formDialog.value = true;
+    }
 }
 function hideDialog() {
     formDialog.value = false;
     submitted.value = false;
 }
 async function confirmDeleteData(prod) {
-    // console.log(prod._id)
     data.value._id = prod._id;
     deleteDialog.value = true;
 }
 
 async function deleteSelected() {
-    // console.log(data.value)
     const myasetDelete = await custumFetch.delete('/dev/kolombytabel/' + data.value._id,
         {
             withCredentials: false,
@@ -99,7 +106,6 @@ async function deleteSelected() {
     data.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Kolom Tabel Deleted', life: 3000 });
     data.value.name = dataValueName
-    // console.log("data.value.name  "+data.value.name )
     await getKoloms();
 }
 
@@ -109,20 +115,19 @@ async function deleteSelected() {
 async function saveData() {
     if (data?.value.kol_name?.trim()) {
         if (data.value._id) {
-            console.log("edit.....data.")
-            const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
-                name: data.value.name,
-                desc: data.value.desc,
-                priv: (data.value.priv),
-            }, {
-                withCredentials: false,
-                headers: {
-                    'token': token.value
-                },
-            })
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
+            // console.log("edit.....data.") tidak ada edit
+            // const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
+            //     name: data.value.name,
+            //     desc: data.value.desc,
+            //     priv: (data.value.priv),
+            // }, {
+            //     withCredentials: false,
+            //     headers: {
+            //         'token': token.value
+            //     },
+            // })
+            // toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
-            console.log("new.......data")
             const dataNew = await custumFetch.post('/dev/tabelkolom', {
                 tabel :data.value.tabel,
                 kol_name: data.value.kol_name,
@@ -144,11 +149,11 @@ async function saveData() {
         data.value = {};
         data.value.name = tabelSelected.value
         getKoloms();
-        // allData()
     }
 }
 
 const getKoloms = async () => {
+    spinner.value = true
     const param = await data.value.name
     try {
         const { data } = await custumFetch.get("/dev/kolombytabel/" + param, {
@@ -161,13 +166,17 @@ const getKoloms = async () => {
     } catch (error) {
         console.log(error)
     }
+    spinner.value=false
 }
 </script>
 
 
 <template>
     <Toast />
+  
+
     <div class="card">
+       <LoadingSpinner v-if="spinner"/>
         <Toolbar class="mb-6">
             <template #start>
                 <Select id="tabel" v-model.trim="data.name" :options="tabels" optionLabel="name" optionValue="name"
@@ -230,26 +239,28 @@ const getKoloms = async () => {
                     <small v-if="submitted && !data.kol_name" class="text-red-500">Name is required.</small>
                 </div>
 
-                <div>
-                    <label for="kol_tipe" class="block font-bold mb-3">Tipe</label>
-                    <!-- <InputText id="kol_tipe" v-model.trim="data.kol_tipe" required="true" :invalid="submitted && !data.kol_tipe" fluid /> -->
-                    <Select id="kol_tipe" v-model.trim="data.kol_tipe" :options="tipes" optionLabel="label" optionValue="value"
-                    placeholder="Tipe" >
-                </Select>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col grow basis-0 gap-2">
+                            <label for="kol_tipe" class="block font-bold mb-3">Tipe</label>
+                            <Select id="kol_tipe" v-model.trim="data.kol_tipe" :options="tipes" optionLabel="label" optionValue="value"
+                            placeholder="Tipe" >
+                        </Select>
+                    </div>
+                    <div class="flex flex-col grow basis-0 gap-2">
+                            <label for="kol_unique" class="block font-bold mb-3">Unique</label>
+                            <Select id="kol_unique" v-model.trim="data.kol_unique" :options="yesNo" optionLabel="label" optionValue="value"
+                            placeholder="Unique" >
+                        </Select>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="kol_unique" class="block font-bold mb-3">Unique</label>
-                    <!-- <InputText id="kol_unique" v-model.trim="data.kol_unique" required="true" :invalid="submitted && !data.kol_unique" fluid /> -->
-                    <Select id="kol_unique" v-model.trim="data.kol_unique" :options="yesNo" optionLabel="label" optionValue="value"
-                    placeholder="Unique" ></Select>
-                </div>
-
-                <div>
-                    <label for="kol_required" class="block font-bold mb-3">Required</label>
-                    <!-- <InputText id="kol_required" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.kol_required" fluid /> -->
-                    <Select id="kol_required" v-model.trim="data.kol_required" :options="yesNo" optionLabel="label" optionValue="value"
-                    placeholder="Required" ></Select>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="kol_required" class="block font-bold mb-3">Required</label>
+                        <!-- <InputText id="kol_required" v-model.trim="data.kol_required" required="true" :invalid="submitted && !data.kol_required" fluid /> -->
+                        <Select id="kol_required" v-model.trim="data.kol_required" :options="yesNo" optionLabel="label" optionValue="value"
+                        placeholder="Required" ></Select>
+                    </div>
                 </div>
 
                 <div>
