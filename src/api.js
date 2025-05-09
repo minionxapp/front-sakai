@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// 1111111
+// 33
 const custumFetch = axios.create({
     // baseURL :'/api/v1' 
     baseURL :'https://backend02-gamma.vercel.app/api/v1'
