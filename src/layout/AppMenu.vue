@@ -14,6 +14,8 @@ const model = ref([
         items: [
             { label: 'Tabel', icon: 'pi pi-fw pi-tabel', to: '/tabel' },
             { label: 'Tabel Kolom', icon: 'pi pi-fw pi-tabel', to: '/tabelkolom' },
+            { label: 'Script', icon: 'pi pi-fw pi-tabel', to: {name : 'script'} },
+            // script
         ],
         visible: true
     },

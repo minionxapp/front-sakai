@@ -74,6 +74,14 @@ const router = createRouter({
                     meta :{
                         requiredAuth:true
                       }
+                },
+                {
+                    path: '/script',
+                    name: 'script',
+                    component: () => import('@/views/admin/Crud/ScriptView.vue'),
+                    meta :{
+                        requiredAuth:true
+                      }
                 }
             ]
         },

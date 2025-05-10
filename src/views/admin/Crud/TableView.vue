@@ -3,9 +3,7 @@ import custumFetch from '@/api';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
-import DatePicker from 'primevue/datepicker';
-// import { useCookies } from 'vue3-cookies'
-// import { defineStore } from "pinia";
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const toast = useToast();
 const dt = ref();
@@ -19,6 +17,7 @@ const submitted = ref(false);
 const data = ref({});//myaset
 const categories = ref([]); //myasets
 const datas = ref();
+const spinner = ref(false)
 
 const privs = ref([
     { label: 'Private', value: 'Private' },
@@ -36,9 +35,12 @@ const filters = ref({
 
 
 
-onMounted(() => {
+onMounted(async() => {
+    spinner.value=true
     token.value = localStorage.getItem('token')
-    allData()
+    await allData()
+    spinner.value=false
+    
 });
 
 const allData = async () => {
@@ -56,9 +58,6 @@ const allData = async () => {
 }
 
 
-
-
-
 function openNew() {
     data.value = {};
     submitted.value = false;
@@ -74,19 +73,8 @@ async function saveData() {
     if (data?.value.name?.trim()) {
         if (data.value._id) {
             //tidak ada proses edit
-            // console.log("edit......")
-            // const dataEdit = await custumFetch.put('/dev/tabel/' + data.value._id, {
-            //     name: data.value.name,
-            //     desc: data.value.desc,
-            //     priv: (data.value.priv),
-            // }, {
-            //     withCredentials: false,
-            //     headers: {
-            //         'token': token.value
-            //     },
-            // })
-            // toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Updated', life: 3000 });
         } else {
+            spinner.value=true
             const dataNew = await custumFetch.post('/dev/tabel', {
                 name: data.value.name,
                 desc: data.value.desc,
@@ -97,6 +85,7 @@ async function saveData() {
                     'token': token.value
                 },
             })
+            spinner.value=false
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Myaset Created', life: 3000 });
         }
 
@@ -157,6 +146,7 @@ function editData(prod) {
     <div>
         <Toast />
         <div class="card">
+            <LoadingSpinner v-if="spinner"/>
             <Toolbar class="mb-6">
                 <template #start>
                     <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
